@@ -1,15 +1,14 @@
 on: [push, pull_request, workflow_dispatch]
 
-name: Build
+name: Build Ferris Sweep Firmware
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
       image: zmkfirmware/zmk-build-arm:stable
-    name: Build
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Cache west modules
@@ -23,47 +22,49 @@ jobs:
             zephyr/
             bootloader/
             zmk/
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('manifest-dir/west.yml') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('config/west.yml') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
-      - name: West Init
+      - name: Initialize west
         run: west init -l config
 
-      - name: West Update
+      - name: Update west modules
         run: west update
 
-      - name: West Zephyr export
+      - name: Export Zephyr CMake
         run: west zephyr-export
 
-      - name: West Build (Cradio/Sweep Left)
-        run: west build -s zmk/app -b nice_nano_v2 -- -DSHIELD=cradio_left -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
+      # 🧩 Build Left Side
+      - name: Build Ferris Sweep Left
+        run: west build -s zmk/app -b nice_nano_v2 -- -DSHIELD=ferris_sweep_left -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
 
-      - name: Cradio/Sweep Left Kconfig file
+      - name: Show Kconfig (Left)
         run: cat build/zephyr/.config | grep -v "^#" | grep -v "^$"
 
-      - name: Rename zmk.uf2
-        run: cp build/zephyr/zmk.uf2 cradio_left_nice_nano_v2.uf2
+      - name: Rename UF2 (Left)
+        run: cp build/zephyr/zmk.uf2 ferris_sweep_left_nice_nano_v2.uf2
 
-      - name: Archive (Cradio/Sweep Left)
+      - name: Upload Firmware (Left)
         uses: actions/upload-artifact@v3
         with:
-          name: firmware-zmk-sweep
-          path: cradio_left_nice_nano_v2.uf2
+          name: firmware-ferris-sweep-left
+          path: ferris_sweep_left_nice_nano_v2.uf2
 
-      - name: West Build (Cradio/Sweep Right)
-        run: west build --pristine -s zmk/app -b nice_nano_v2 -- -DSHIELD=cradio_right -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
+      # 🧩 Build Right Side
+      - name: Build Ferris Sweep Right
+        run: west build --pristine -s zmk/app -b nice_nano_v2 -- -DSHIELD=ferris_sweep_right -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
 
-      - name: Cradio/Sweep Right Kconfig file
+      - name: Show Kconfig (Right)
         run: cat build/zephyr/.config | grep -v "^#" | grep -v "^$"
 
-      - name: Rename zmk.uf2
-        run: cp build/zephyr/zmk.uf2 cradio_right_nice_nano_v2.uf2
+      - name: Rename UF2 (Right)
+        run: cp build/zephyr/zmk.uf2 ferris_sweep_right_nice_nano_v2.uf2
 
-      - name: Archive (Cradio/Sweep Right)
+      - name: Upload Firmware (Right)
         uses: actions/upload-artifact@v3
         with:
-          name: firmware-zmk-sweep
-          path: cradio_right_nice_nano_v2.uf2
+          name: firmware-ferris-sweep-right
+          path: ferris_sweep_right_nice_nano_v2.uf2
