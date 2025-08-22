@@ -48,7 +48,7 @@ jobs:
         run: cp build/zephyr/zmk.uf2 ferris_sweep_left_nice_nano_v2.uf2
 
       - name: Upload Firmware (Left)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: firmware-ferris-sweep-left
           path: ferris_sweep_left_nice_nano_v2.uf2
@@ -64,7 +64,7 @@ jobs:
         run: cp build/zephyr/zmk.uf2 ferris_sweep_right_nice_nano_v2.uf2
 
       - name: Upload Firmware (Right)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: firmware-ferris-sweep-right
           path: ferris_sweep_right_nice_nano_v2.uf2
